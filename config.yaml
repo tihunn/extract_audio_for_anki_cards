@@ -1,0 +1,30 @@
+﻿paths:
+  audio_file: "input/11.mp3"
+
+  model_path: "input/Juggernaut-XL_v9_RunDiffusionPhoto_v2.safetensors"
+
+  prompts_file: "input/anki_deck1_unique_words.json"
+
+  output_dir_images: "output/images"
+
+image_generation:
+  width: 1024
+  height: 1024
+
+  steps: 30
+
+  cfg: 7.0
+
+  seed: 42
+
+  negative_prompt: >
+    worst quality,
+    low quality,
+    blurry,
+    bad anatomy,
+    deformed,
+    distorted,
+    watermark,
+    text
+
+language_transcribe: "ja"
