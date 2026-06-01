@@ -15,7 +15,7 @@ def run_whisper(audio_path):
 
     config = load_config()
 
-    output_dir = "output"
+    output_dir = audio_path.parent
 
     os.makedirs(output_dir, exist_ok=True)
 
@@ -58,10 +58,21 @@ def run_whisper(audio_path):
     )
 	
     # =========================================
-    # SAVE FULL TEXT
+    # SAVE FULL TEXT WITH SEGMENT BREAKS
     # =========================================
 
-    full_text = result["text"].strip()
+    # Формируем текст с разделением по сегментам (предложениям)
+    segmented_text_parts = []
+
+    for seg in result["segments"]:
+        # Получаем текст сегмента и удаляем лишние пробелы
+        segment_text = seg["text"].strip()
+    
+        if segment_text:  # Добавляем только непустые сегменты
+            segmented_text_parts.append(segment_text)
+
+    # Объединяем с переносами строк
+    full_text_with_breaks = "\n".join(segmented_text_parts)
 
     text_output_path = os.path.join(
         output_dir,
@@ -69,7 +80,7 @@ def run_whisper(audio_path):
     )
 
     with open(text_output_path, "w", encoding="utf-8") as f:
-        f.write(full_text)
+        f.write(full_text_with_breaks)
 
     # =========================================
     # SAVE WORDS JSON

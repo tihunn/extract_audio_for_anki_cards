@@ -7,6 +7,8 @@ from rich.prompt import Prompt
 from rich.console import Console
 from rich import box
 import syncedlyrics
+import os
+import shutil
 
 import logging
 
@@ -229,8 +231,8 @@ def search_lyrics(audio_name: str):
 # SAVE LYRICS
 # =========================================================
 
-def save_lyrics(audio_name: str, lyrics: str):
-    lrc_path = OUTPUT_DIR / f"{audio_name}.lrc"
+def save_lyrics(lyrics_name: str, lyrics: str, audio_folder):
+    lrc_path = audio_folder / f"{lyrics_name}.lrc"
 
     with open(lrc_path, "w", encoding="utf-8") as f:
         f.write(lyrics)
@@ -238,6 +240,40 @@ def save_lyrics(audio_name: str, lyrics: str):
 
     console.print(f"[green]Lyrics сохранены:[/green] {lrc_path}")
 
+# =========================================================
+# create_music_folder
+# =========================================================
+
+def create_music_folder(audio_path):
+    """
+    Создает папку с названием музыки и копирует/перемещает файлы
+    
+    Args:
+        audio_path: путь к аудиофайлу (объект WindowsPath или str)
+        
+        source_path: исходный путь для копирования (только для локальных файлов)
+    
+    Returns:
+        новый путь к файлу в созданной папке
+    """
+    # Получаем имя музыки (без расширения)
+    music_name = audio_path.stem if hasattr(audio_path, 'stem') else Path(audio_path).stem
+    
+    # Создаем путь к новой папке (output/{название_музыки}/)
+    output_dir = Path("output") / music_name
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Определяем новый путь для аудиофайла
+    original_extension = audio_path.suffix if hasattr(audio_path, 'suffix') else Path(audio_path).suffix
+    new_audio_path = output_dir / f"{music_name}{original_extension}"
+    
+
+        # Для скачанных файлов - перемещаем в новую папку
+    shutil.move(str(audio_path), str(new_audio_path))
+    console.print(f"[green]Файл перемещен в {output_dir}[/green]")
+    
+    return new_audio_path	
+	
 # =========================================================
 # MAIN
 # =========================================================
@@ -276,23 +312,26 @@ def resource_selection():
             console.print("[red]Неверный выбор[/red]")
             return
 
-
-        def search_and_save_lyric(audio_name):
+        audio_path = create_music_folder(audio_path)
+			
+        def search_and_save_lyric(audio_folder, audio_name):
             if not audio_name:
                 return None
-
+			
             lyrics = search_lyrics(audio_name)
             if lyrics:
-                return save_lyrics(audio_name, lyrics)
+                return save_lyrics(audio_name, lyrics, audio_folder)
             else:
                 console.print("[red]Lyrics не найдены[/red]")
                 audio_name = input("\nПопробуйте вести название вручную, или оставьте пустую строку: ").strip()
-                search_and_save_lyric(audio_name)
-
-        lrc_path = search_and_save_lyric(audio_path.stem)
+                search_and_save_lyric(audio_folder, audio_name)
+				
+        audio_folder = audio_path.parent
+        lrc_path = search_and_save_lyric(audio_folder, audio_path.stem)
         console.print("\n[bold green]Готово[/bold green]")
+		
         return audio_path, lrc_path 
-
+		
     except KeyboardInterrupt:
         console.print("\n[red]Остановлено пользователем[/red]")
 
