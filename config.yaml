@@ -1,9 +1,8 @@
 ﻿paths:
-  audio_file: "input/11.mp3"
 
   model_path: "input/Juggernaut-XL_v9_RunDiffusionPhoto_v2.safetensors"
 
-  prompts_file: "input/anki_deck1_unique_words.json"
+  prompts_file: "input/anki_unique_words.json"
 
   output_dir_images: "output/images"
 

@@ -7,7 +7,7 @@ import whisper
 from config_loader import load_config
 
 
-def run_whisper():
+def run_whisper(audio_path):
 
     print("=" * 60)
     print("START: WHISPER")
@@ -15,13 +15,11 @@ def run_whisper():
 
     config = load_config()
 
-    audio_file = config["paths"]["audio_file"]
-
     output_dir = "output"
 
     os.makedirs(output_dir, exist_ok=True)
 
-    print(f"Audio file: {audio_file}")
+    print(f"Audio file: {audio_path}")
 
     # =========================================
     # GPU INFO
@@ -52,13 +50,13 @@ def run_whisper():
     print("Transcribing audio...")
 
     result = model.transcribe(
-        audio_file,
+        str(audio_path),
         language=config["language_transcribe"],
         task="transcribe",
         word_timestamps=True,
         verbose=True,
     )
-
+	
     # =========================================
     # SAVE FULL TEXT
     # =========================================
