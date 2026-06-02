@@ -7,7 +7,7 @@ from diffusers import StableDiffusionXLPipeline
 from config_loader import load_config
 
 
-def run_generate_images():
+def run_generate_images(output_dir, gpt_output):
 
     print("=" * 60)
     print("START: IMAGE GENERATION")
@@ -19,8 +19,7 @@ def run_generate_images():
     settings = config["image_generation"]
 
     model_path = paths["model_path"]
-    prompts_file = paths["prompts_file"]
-    output_dir = paths["output_dir_images"]
+    image_dir = output_dir / "images"
 
     width = settings["width"]
     height = settings["height"]
@@ -32,7 +31,7 @@ def run_generate_images():
 
     negative_prompt = settings["negative_prompt"]
 
-    os.makedirs(output_dir, exist_ok=True)
+    os.makedirs(image_dir, exist_ok=True)
 
     print("Loading SDXL model...")
 
@@ -53,9 +52,9 @@ def run_generate_images():
     pipe.enable_vae_slicing()
     pipe.enable_vae_tiling()
 
-    print(f"Loading prompts: {prompts_file}")
+    print(f"Loading prompts: {gpt_output}")
 
-    with open(prompts_file, "r", encoding="utf-8") as f:
+    with open(gpt_output, "r", encoding="utf-8") as f:
         prompts_data = json.load(f)
 
     print(f"Loaded prompts: {len(prompts_data)}")
@@ -65,13 +64,14 @@ def run_generate_images():
     for index, item in enumerate(prompts_data):
 
         prompt = item.get("image_prompt", "").strip()
+        word = item.get("word", "").strip()		
 
         if not prompt:
-            print(f"Skipping empty prompt #{index}")
+            print(f"Skipping empty prompt {word} #{index}")
             continue
 
         print("\n" + "-" * 60)
-        print(f"Generating image #{index}")
+        print(f"Generating image #{word}")
         print(prompt)
         print("-" * 60)
 
@@ -88,8 +88,8 @@ def run_generate_images():
             ).images[0]
 
         filename = os.path.join(
-            output_dir,
-            f"image_{index:04d}.png"
+            image_dir,
+            f"{word}.png"
         )
 
         image.save(filename)

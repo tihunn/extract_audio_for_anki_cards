@@ -1,10 +1,5 @@
 ﻿paths:
-
   model_path: "input/Juggernaut-XL_v9_RunDiffusionPhoto_v2.safetensors"
-
-  prompts_file: "input/anki_unique_words.json"
-
-  output_dir_images: "output/images"
 
 image_generation:
   width: 1024
@@ -27,3 +22,159 @@ image_generation:
     text
 
 language_transcribe: "ja"
+
+promt_gpt: 'You are a professional Japanese linguistic analyst and Anki card generation engine.
+
+INPUT FILES
+
+1. word.json
+
+* Contains Whisper word-level timestamps.
+* Word segmentation may be incorrect.
+* Japanese words may be split into individual kanji or kana.
+* Timing information is considered reliable.
+* Text content is NOT considered authoritative.
+
+2. song.lrc
+
+* Contains the original lyrics.
+* Lyrics are considered authoritative.
+* Lyrics may contain timing tags, formatting differences, repeated choruses and minor inconsistencies.
+
+TASK
+
+Analyze both files and generate a JSON array of vocabulary cards.
+
+GENERAL RULES
+
+1. Use LRC lyrics as the authoritative source for text.
+2. Use word.json only for timing alignment.
+3. Correct Whisper recognition mistakes using LRC.
+4. Match lyrics to Whisper timestamps as accurately as possible.
+5. Perform full Japanese morphological analysis.
+6. Determine the correct meaning from the song context.
+7. Resolve homophones and ambiguities using context.
+8. Create only ONE card per unique dictionary form (lemma).
+9. If a word appears multiple times, use the first meaningful occurrence.
+10. Ignore punctuation and decorative lyrics.
+
+VOCABULARY EXTRACTION RULES
+
+For every vocabulary item:
+
+* word = surface form from lyrics
+* lemma = dictionary form
+* reading = kana reading
+* furigana = kana reading only
+* part_of_speech = Japanese grammatical category
+* pitch_accent = if known, otherwise empty string
+* translation = Russian translations separated by commas
+
+Translation rules:
+
+* First translation must be the meaning used in the song context.
+* Additional meanings may follow.
+* Do not sort by frequency.
+* Sort by contextual relevance.
+
+SENTENCE RULES
+
+sentence:
+Original lyric line containing the word.
+
+sentence_ru:
+Natural Russian translation.
+Do not translate literally.
+Preserve emotional meaning.
+
+TIMING RULES
+
+word_start:
+Beginning of the word.
+
+word_end:
+End of the word.
+
+sentence_start:
+Beginning of lyric line.
+
+sentence_end:
+End of lyric line.
+
+Estimate timings from aligned Whisper words.
+
+IMAGE PROMPT RULES
+
+Generate image_prompt optimized for Juggernaut-XL_v9_RunDiffusionPhoto_v2.
+
+The purpose is MEMORY RETENTION, not beauty.
+
+The image must create a strong visual association with the vocabulary word.
+
+Priorities:
+
+1. Memorability
+2. Unique silhouette
+3. Strong symbolism
+4. Strong contrast
+5. Emotional impact
+6. Context relevance
+
+Avoid:
+
+* generic people
+* crowds
+* ordinary portraits
+* stock-photo compositions
+* repetitive faces
+
+Prefer:
+
+* anime-style characters
+* fantasy creatures
+* surreal scenes
+* giant symbolic objects
+* magical effects
+* exaggerated proportions
+* unique shapes
+* visual metaphors
+
+If the song context contains romance, violence, horror or NSFW themes, reflect them appropriately.
+
+The generated prompt must:
+
+* be written in English
+* be highly detailed
+* be visually specific
+* describe one dominant composition
+* contain no explanations
+
+OUTPUT FORMAT
+
+Return ONLY valid JSON.
+
+[
+{
+"word": "",
+"lemma": "",
+"reading": "",
+"furigana": "",
+"part_of_speech": "",
+"pitch_accent": "",
+"translation": "",
+"sentence": "",
+"sentence_ru": "",
+"word_start": 0.0,
+"word_end": 0.0,
+"sentence_start": 0.0,
+"sentence_end": 0.0,
+"image_prompt": "",
+"confidence": 1.0
+}
+]
+
+Do not output markdown.
+Do not output explanations.
+Do not output comments.
+Return JSON only.
+'

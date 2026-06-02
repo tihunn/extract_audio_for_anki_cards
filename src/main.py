@@ -1,8 +1,8 @@
 ﻿import time
-
 from transcribe_audio import run_whisper
 from generate_images import run_generate_images
 from search_audio_and_lyric import resource_selection
+from process_llm import semi_manual_processing
 
 def print_block(title):
 
@@ -24,30 +24,31 @@ def main():
     # =====================================	
 	
     audio_path, lrc_path = resource_selection()
-
+    output_dir = audio_path.parent
+	
     # =====================================
     # WHISPER
     # =====================================
 
     print_block("RUNNING WHISPER")
 
-    run_whisper(audio_path)
+    words_json_path = run_whisper(audio_path, output_dir)
 
     # =====================================
     # Processing lyrics
     # =====================================
-
+	
     print_block("Processing lyrics")
-
-    input("ждём файл вручную созданый в gpt")
-
+	
+    gpt_output = semi_manual_processing(output_dir, words_json_path, lrc_path)
+    
     # =====================================
     # IMAGE GENERATION
     # =====================================
 
     print_block("RUNNING IMAGE GENERATION")
 
-    run_generate_images()
+    run_generate_images(output_dir, gpt_output)
 	
     # =====================================
     # Anki connect

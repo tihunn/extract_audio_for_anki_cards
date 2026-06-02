@@ -7,19 +7,13 @@ import whisper
 from config_loader import load_config
 
 
-def run_whisper(audio_path):
+def run_whisper(audio_path, output_dir):
 
     print("=" * 60)
     print("START: WHISPER")
     print("=" * 60)
 
     config = load_config()
-
-    output_dir = audio_path.parent
-
-    os.makedirs(output_dir, exist_ok=True)
-
-    print(f"Audio file: {audio_path}")
 
     # =========================================
     # GPU INFO
@@ -141,3 +135,5 @@ def run_whisper(audio_path):
     print(f"Saved segments: {segments_json_path}")
 
     print(f"Total words: {len(words_data)}")
+	
+    return words_json_path, segments_json_path, full_text_with_breaks	
