@@ -7,7 +7,7 @@ from diffusers import StableDiffusionXLPipeline
 from config_loader import load_config
 
 
-def run_generate_images(output_dir, gpt_output):
+def run_generate_images(output_dir, gpt_output_json):
 
     print("=" * 60)
     print("START: IMAGE GENERATION")
@@ -52,16 +52,16 @@ def run_generate_images(output_dir, gpt_output):
     pipe.enable_vae_slicing()
     pipe.enable_vae_tiling()
 
-    print(f"Loading prompts: {gpt_output}")
+    print(f"Loading prompts: {gpt_output_json}")
 
-    with open(gpt_output, "r", encoding="utf-8") as f:
-        prompts_data = json.load(f)
+    with open(gpt_output_json, "r", encoding="utf-8") as f:
+        gpt_output_data = json.load(f)
 
-    print(f"Loaded prompts: {len(prompts_data)}")
+    print(f"Loaded prompts: {len(gpt_output_data)}")
 
     generator = torch.Generator(device="cuda").manual_seed(seed)
 
-    for index, item in enumerate(prompts_data):
+    for index, item in enumerate(gpt_output_data):
 
         prompt = item.get("image_prompt", "").strip()
         word = item.get("word", "").strip()		
@@ -97,3 +97,4 @@ def run_generate_images(output_dir, gpt_output):
         print(f"Saved: {filename}")
 
     print("\nIMAGE GENERATION FINISHED")
+    return gpt_output_data

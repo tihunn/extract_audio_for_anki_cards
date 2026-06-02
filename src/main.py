@@ -3,6 +3,7 @@ from transcribe_audio import run_whisper
 from generate_images import run_generate_images
 from search_audio_and_lyric import resource_selection
 from process_llm import semi_manual_processing
+from audio_segmentation import slice_audio
 
 def print_block(title):
 
@@ -48,8 +49,16 @@ def main():
 
     print_block("RUNNING IMAGE GENERATION")
 
-    run_generate_images(output_dir, gpt_output)
+    gpt_output_data = run_generate_images(output_dir, gpt_output)
 	
+    # =====================================
+    # Audio segmentation 
+    # =====================================
+    
+    print_block("Audio segmentation")
+	
+    slice_audio(audio_path, output_dir, gpt_output_data)
+    	
     # =====================================
     # Anki connect
     # =====================================
