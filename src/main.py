@@ -4,6 +4,7 @@ from generate_images import run_generate_images
 from search_audio_and_lyric import resource_selection
 from process_llm import semi_manual_processing
 from audio_segmentation import slice_audio
+from import_anki import import_to_anki
 
 def print_block(title):
 
@@ -65,7 +66,7 @@ def main():
 
     print_block("anki connect")
 
-    print("пока нету")
+    import_to_anki(gpt_output_data, output_dir)
 	
     # =====================================
 
