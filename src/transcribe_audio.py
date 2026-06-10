@@ -97,7 +97,7 @@ def run_whisper(audio_path, output_dir):
 
     words_json_path = os.path.join(
         output_dir,
-        "words.json"
+        "words_by_whisper.json"
     )
 
     with open(words_json_path, "w", encoding="utf-8") as f:
