@@ -5,6 +5,7 @@ from search_audio_and_lyric import resource_selection
 from process_llm import semi_manual_processing
 from audio_segmentation import slice_audio
 from import_anki import import_to_anki
+from pathlib import Path
 
 def print_block(title):
 
@@ -34,15 +35,15 @@ def main():
 
     print_block("RUNNING WHISPER")
 
-    words_json_path = run_whisper(audio_path, output_dir)
-
+    words_json_path_str = run_whisper(audio_path, output_dir)
+	
     # =====================================
     # Processing lyrics
     # =====================================
 	
     print_block("Processing lyrics")
 	
-    gpt_output = semi_manual_processing(output_dir, words_json_path, lrc_path)
+    gpt_output = semi_manual_processing(output_dir, Path(words_json_path_str), lrc_path)
     
     # =====================================
     # IMAGE GENERATION
