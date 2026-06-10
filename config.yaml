@@ -23,69 +23,72 @@ image_generation:
 
 language_transcribe: "ja"
 
-promt_gpt: 'You are a professional Japanese linguistic analyst and Anki card generation engine.
+extract_promt_gpt: 'You are a Japanese linguistic extraction engine.
 
-INPUT FILES
+INPUT
 
-1. word.json
+=== WORD.JSON by Whisper ===
+{word.json}
+=== END WORD.JSON ===
 
-* Contains Whisper word-level timestamps.
-* Word segmentation may be incorrect.
-* Japanese words may be split into individual kanji or kana.
-* Timing information is considered reliable.
-* Text content is NOT considered authoritative.
-
-2. song.lrc
-
-* Contains the original lyrics.
-* Lyrics are considered authoritative.
-* Lyrics may contain timing tags, formatting differences, repeated choruses and minor inconsistencies.
+=== SONG.LRC ===
+{lyrics.lrc}
+=== END SONG.LRC ===
 
 TASK
 
-Analyze both files and generate a JSON array of vocabulary cards.
+This is a data extraction task.
 
-GENERAL RULES
+This is NOT a summarization task.
 
-1. Use LRC lyrics as the authoritative source for text.
-2. Use word.json only for timing alignment.
-3. Correct Whisper recognition mistakes using LRC.
-4. Match lyrics to Whisper timestamps as accurately as possible.
-5. Perform full Japanese morphological analysis.
-6. Determine the correct meaning from the song context.
-7. Resolve homophones and ambiguities using context.
-8. Create only ONE card per unique dictionary form (lemma).
-9. If a word appears multiple times, use the first meaningful occurrence.
-10. Ignore punctuation and decorative lyrics.
+This is NOT a vocabulary selection task.
 
-VOCABULARY EXTRACTION RULES
+You must extract ALL unique Japanese lemmas appearing in the lyrics.
 
-For every vocabulary item:
+SOURCE PRIORITY
 
-* word = surface form from lyrics
-* lemma = dictionary form
-* reading = kana reading
-* furigana = kana reading only
-* part_of_speech = Japanese grammatical category
-* pitch_accent = if known, otherwise empty string
-* translation = Russian translations separated by commas
+* LRC is authoritative for text.
+* word.json is authoritative for timings.
 
-Translation rules:
+PROCESS
 
-* First translation must be the meaning used in the song context.
-* Additional meanings may follow.
-* Do not sort by frequency.
-* Sort by contextual relevance.
+1. Parse all lyrics.
+2. Correct Whisper mistakes using lyrics.
+3. Perform Japanese morphological analysis.
+4. Extract all unique lemmas.
+5. Keep the first meaningful occurrence of every lemma.
+6. Find word and sentence timings.
 
-SENTENCE RULES
+INCLUDE
 
-sentence:
-Original lyric line containing the word.
+* nouns
+* verbs
+* i-adjectives
+* na-adjectives
+* adverbs
+* pronouns
+* interjections
 
-sentence_ru:
-Natural Russian translation.
-Do not translate literally.
-Preserve emotional meaning.
+EXCLUDE
+
+* particles
+* You are a Japanese linguistic extraction engine.
+
+OUTPUT
+
+Return ONLY valid JSON.
+
+[
+{
+"surface": "",
+"lemma": "",
+"sentence": "",
+"word_start": 0.0,
+"word_end": 0.0,
+"sentence_start": 0.0,
+"sentence_end": 0.0
+}
+]
 
 TIMING RULES
 
@@ -103,6 +106,88 @@ End of lyric line.
 
 Estimate timings from aligned Whisper words.
 
+CRITICAL REQUIREMENT
+
+Extract ALL unique lemmas.
+
+Do not select representative examples.
+
+Do not summarize.
+
+Every unique lemma must appear exactly once.
+
+'
+
+
+prompt_cards_gen: 'You are an expert Japanese vocabulary card generator.
+
+SONG CONTEXT
+
+=== SONG.LRC ===
+{song.lrc}
+=== END SONG.LRC ===
+
+=== CARDS.JSON ===
+{cards.json}
+=== END CARDS.JSON ===
+
+TASK
+
+Analyze Song.lrc and generate a JSON array of vocabulary cards.
+
+Determine for each card:
+
+* contextual meaning
+* furigana of the lemma
+* part of speech
+* Russian translation
+* sentence translation
+* grammar analysis
+* generate image prompt
+
+Translation rules:
+
+* First translation must be the meaning used in the song context.
+* Additional meanings may follow.
+* Do not sort by frequency.
+* Sort by contextual relevance.
+
+Sentence translation:
+Natural Russian translation.
+Do not translate literally.
+Preserve emotional meaning.
+
+GRAMMAR ANALYSIS RULES
+
+For every sentence perform a full grammatical analysis.
+
+Identify:
+
+particles
+verb conjugations
+adjective conjugations
+auxiliary verbs
+contractions
+grammatical patterns
+sentence-ending expressions
+politeness forms
+
+Do NOT explain ordinary nouns or vocabulary.
+
+Only explain grammar.
+
+For every grammar point provide:
+
+surface form
+category
+grammar name
+detailed Russian explanation
+role in this specific sentence
+
+Generate:
+
+grammar_points as a structured JSON array.
+
 IMAGE PROMPT RULES
 
 Generate image_prompt optimized for Juggernaut-XL_v9_RunDiffusionPhoto_v2.
@@ -111,7 +196,7 @@ The purpose is MEMORY RETENTION, not beauty.
 
 The image must create a strong visual association with the vocabulary word.
 
-Priorities:
+Prioritize:
 
 1. Memorability
 2. Unique silhouette
@@ -130,7 +215,6 @@ Avoid:
 
 Prefer:
 
-* anime-style characters
 * fantasy creatures
 * surreal scenes
 * giant symbolic objects
@@ -138,6 +222,7 @@ Prefer:
 * exaggerated proportions
 * unique shapes
 * visual metaphors
+
 
 If the song context contains romance, violence, horror or NSFW themes, reflect them appropriately.
 
@@ -149,32 +234,42 @@ The generated prompt must:
 * describe one dominant composition
 * contain no explanations
 
-OUTPUT FORMAT
+OUTPUT
 
 Return ONLY valid JSON.
 
-[
 {
-"word": "",
 "lemma": "",
-"reading": "",
 "furigana": "",
 "part_of_speech": "",
-"pitch_accent": "",
 "translation": "",
 "sentence": "",
 "sentence_ru": "",
-"word_start": 0.0,
-"word_end": 0.0,
-"sentence_start": 0.0,
-"sentence_end": 0.0,
-"image_prompt": "",
-"confidence": 1.0
+"grammar_points": [],
+"image_prompt": ""
 }
-]
 
-Do not output markdown.
-Do not output explanations.
-Do not output comments.
-Return JSON only.
+
+'
+
+prompt_validator: '
+You are a Japanese language quality assurance engine.
+
+Review every generated card.
+
+Verify:
+
+* lemma correctness
+* furigana correctness
+* contextual translation
+* sentence translation
+* grammar analysis
+* part of speech
+
+Fix any errors.
+
+Return corrected JSON.
+
+Do not add explanations.
+
 '
