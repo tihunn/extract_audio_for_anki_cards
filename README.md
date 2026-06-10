@@ -11,5 +11,18 @@ sudo apt install ffmpeg
 
 Windows:
 
-скачать:
+download:
 FFmpeg Builds https://www.gyan.dev/ffmpeg/builds/?utm_source=chatgpt.com
+
+Install prodeject:
+
+1. Insatall python
+2. Check your cuda version (if you have it)
+	nvcc --version
+3. Go to the folder, launch the console and enter the code below 
+	or run the bat file (if I make one)
+
+python -m venv venv
+venv\Scripts\activate
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
+pip install -r requirements.txt
