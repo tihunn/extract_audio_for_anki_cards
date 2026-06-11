@@ -1,5 +1,4 @@
-﻿import json
-import os
+﻿import os
 import torch
 
 from diffusers import StableDiffusionXLPipeline
@@ -7,7 +6,7 @@ from diffusers import StableDiffusionXLPipeline
 from config_loader import load_config
 
 
-def run_generate_images(output_dir, gpt_output_json):
+def run_generate_images(output_dir, gpt_output_data):
 
     print("=" * 60)
     print("START: IMAGE GENERATION")
@@ -52,11 +51,6 @@ def run_generate_images(output_dir, gpt_output_json):
     pipe.enable_vae_slicing()
     pipe.enable_vae_tiling()
 
-    print(f"Loading prompts: {gpt_output_json}")
-
-    with open(gpt_output_json, "r", encoding="utf-8") as f:
-        gpt_output_data = json.load(f)
-
     print(f"Loaded prompts: {len(gpt_output_data)}")
 
     generator = torch.Generator(device="cuda").manual_seed(seed)
@@ -64,7 +58,7 @@ def run_generate_images(output_dir, gpt_output_json):
     for index, item in enumerate(gpt_output_data):
 
         prompt = item.get("image_prompt", "").strip()
-        word = item.get("word", "").strip()		
+        word = item.get("surface", "").strip()
 
         if not prompt:
             print(f"Skipping empty prompt {word} #{index}")
@@ -97,4 +91,3 @@ def run_generate_images(output_dir, gpt_output_json):
         print(f"Saved: {filename}")
 
     print("\nIMAGE GENERATION FINISHED")
-    return gpt_output_data

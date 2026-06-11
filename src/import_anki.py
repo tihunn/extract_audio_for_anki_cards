@@ -1,5 +1,4 @@
 ﻿from pathlib import Path
-import json
 import base64
 import requests
 
@@ -20,7 +19,7 @@ def anki(action: str, **params):
         },
         timeout=30
     )
-	
+
     response.raise_for_status()
 
     data = response.json()
@@ -205,17 +204,17 @@ def import_to_anki(
     output_dir: Path,
 ):
     """
-	Создаёт модель, доску anki и Импортирует все медиа
-	
-	Parameters
+    Создаёт модель, доску anki и Импортирует все медиа
+
+    Parameters
     ----------
     gpt_output_data: list[dict] 
-		Распакованые данные из json из после обработки gpt
-	output_dir: Path 
-		Папка с файлами всех результатов обработки предыдущих скриптов
-	"""  
-	
-    deck_name = output_dir.stem	
+        Распакованые данные из json из после обработки gpt
+    output_dir: Path
+        Папка с файлами всех результатов обработки предыдущих скриптов
+    """
+
+    deck_name = output_dir.stem
     words_dir = output_dir / "words"
     sentences_dir = output_dir / "sentences"
     images_dir = output_dir / "images"

@@ -7,8 +7,8 @@ from audio_segmentation import slice_audio
 from import_anki import import_to_anki
 from pathlib import Path
 
-def print_block(title):
 
+def print_block(title):
     print("\n")
     print("#" * 80)
     print(title)
@@ -19,16 +19,16 @@ def print_block(title):
 def main():
 
     start_time = time.time()
-	
+
     print_block("PROJECT START")
-	
+
     # =====================================
     # Load audio
     # =====================================	
-	
+
     audio_path, lrc_path = resource_selection()
     output_dir = audio_path.parent
-	
+
     # =====================================
     # WHISPER
     # =====================================
@@ -36,14 +36,14 @@ def main():
     print_block("RUNNING WHISPER")
 
     words_json_path_str = run_whisper(audio_path, output_dir)
-	
+
     # =====================================
     # Processing lyrics
     # =====================================
-	
+
     print_block("Processing lyrics")
-	
-    gpt_output = semi_manual_processing(output_dir, Path(words_json_path_str), lrc_path)
+
+    gpt_output_data = semi_manual_processing(output_dir, Path(words_json_path_str), lrc_path)
     
     # =====================================
     # IMAGE GENERATION
@@ -51,16 +51,16 @@ def main():
 
     print_block("RUNNING IMAGE GENERATION")
 
-    gpt_output_data = run_generate_images(output_dir, gpt_output)
-	
+    run_generate_images(output_dir, gpt_output_data)
+
     # =====================================
     # Audio segmentation 
     # =====================================
     
     print_block("Audio segmentation")
-	
+
     slice_audio(audio_path, output_dir, gpt_output_data)
-    	
+
     # =====================================
     # Anki connect
     # =====================================
@@ -68,7 +68,7 @@ def main():
     print_block("anki connect")
 
     import_to_anki(gpt_output_data, output_dir)
-	
+
     # =====================================
 
     total_time = time.time() - start_time

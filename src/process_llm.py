@@ -224,7 +224,6 @@ def view_prompt(prompt: str, str_number_batch: str = "", prev_content: str = "")
         return view_prompt(prompt, str_number_batch + warn_ctrl_c, prev_content)
 
 
-
 def semi_manual_processing(output_dir: Path, words_json_path: Path, lrc_path: Path, cards_per_batch: int = 10):
     # =========================================
     # First Prompt for gpt
@@ -280,3 +279,5 @@ def semi_manual_processing(output_dir: Path, words_json_path: Path, lrc_path: Pa
 
     with open(path_anki, "w", encoding="utf-8") as file:
         json.dump(data_anki, file)
+
+    return data_anki

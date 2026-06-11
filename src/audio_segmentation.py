@@ -24,8 +24,8 @@ def slice_audio(audio_path: Path, output_dir: Path, gpt_output_data: list[dict])
     ----------
     audio_path : Path
         Путь к исходному аудиофайлу.
-	output_dir : Path
-		Путь к рабочей папке.
+    output_dir : Path
+        Путь к рабочей папке.
     gpt_output_data : list[dict]
         Список объектов вида:
         {
