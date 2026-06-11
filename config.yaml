@@ -120,16 +120,15 @@ Every unique lemma must appear exactly once.
 
 
 prompt_cards_gen: 'You are an expert Japanese vocabulary card generator.
+=== CARDS.JSON ===
+{cards.json}
+=== END CARDS.JSON ===
 
 SONG CONTEXT
 
 === SONG.LRC ===
 {song.lrc}
 === END SONG.LRC ===
-
-=== CARDS.JSON ===
-{cards.json}
-=== END CARDS.JSON ===
 
 TASK
 
