@@ -54,7 +54,7 @@ def slice_audio(audio_path: Path, output_dir: Path, gpt_output_data: list[dict])
         # ----------------------
         # WORD
         # ----------------------
-        word = item["word"]
+        word = item["surface"]
 
         start_ms = int(item["word_start"] * 1000)
         end_ms = int(item["word_end"] * 1000)
