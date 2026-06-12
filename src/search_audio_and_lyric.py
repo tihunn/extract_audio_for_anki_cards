@@ -58,7 +58,7 @@ def download_youtube_audio(url: str) -> str:
 
     return path
 
-	
+
 def search_youtube_video(query: str, limit: int = 6) -> str:
     """
     Ищет видео на YouTube через pytubefix.
@@ -273,7 +273,7 @@ def create_music_folder(audio_path):
     console.print(f"[green]Файл перемещен в {output_dir}[/green]")
     
     return new_audio_path	
-	
+
 # =========================================================
 # MAIN
 # =========================================================
@@ -313,25 +313,25 @@ def resource_selection():
             return
 
         audio_path = create_music_folder(audio_path)
-			
+
         def search_and_save_lyric(audio_folder, audio_name):
             if not audio_name:
                 return None
-			
+
             lyrics = search_lyrics(audio_name)
             if lyrics:
                 return save_lyrics(audio_name, lyrics, audio_folder)
             else:
                 console.print("[red]Lyrics не найдены[/red]")
                 audio_name = input("\nПопробуйте вести название вручную, или оставьте пустую строку: ").strip()
-                search_and_save_lyric(audio_folder, audio_name)
-				
+                return search_and_save_lyric(audio_folder, audio_name)
+
         audio_folder = audio_path.parent
         lrc_path = search_and_save_lyric(audio_folder, audio_path.stem)
         console.print("\n[bold green]Готово[/bold green]")
-		
+
         return audio_path, lrc_path 
-		
+
     except KeyboardInterrupt:
         console.print("\n[red]Остановлено пользователем[/red]")
 
