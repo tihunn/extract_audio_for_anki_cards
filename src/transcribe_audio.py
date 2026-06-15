@@ -1,9 +1,7 @@
 import json
 import os
-
 import torch
 import whisper
-
 from config_loader import load_config
 
 
@@ -50,7 +48,7 @@ def run_whisper(audio_path, output_dir):
         word_timestamps=True,
         verbose=True,
     )
-	
+
     # =========================================
     # SAVE FULL TEXT WITH SEGMENT BREAKS
     # =========================================
@@ -70,7 +68,7 @@ def run_whisper(audio_path, output_dir):
 
     text_output_path = os.path.join(
         output_dir,
-        "transcription.txt"
+        "transcription_by_whisper.txt"
     )
 
     with open(text_output_path, "w", encoding="utf-8") as f:
@@ -95,12 +93,12 @@ def run_whisper(audio_path, output_dir):
                 "end": w["end"]
             })
 
-    words_json_path = os.path.join(
+    word_timings_json_path = os.path.join(
         output_dir,
         "words_by_whisper.json"
     )
 
-    with open(words_json_path, "w", encoding="utf-8") as f:
+    with open(word_timings_json_path, "w", encoding="utf-8") as f:
         json.dump(
             words_data,
             f,
@@ -114,7 +112,7 @@ def run_whisper(audio_path, output_dir):
 
     segments_json_path = os.path.join(
         output_dir,
-        "segments.json"
+        "segments_by_whisper.json"
     )
 
     with open(segments_json_path, "w", encoding="utf-8") as f:
@@ -130,10 +128,9 @@ def run_whisper(audio_path, output_dir):
     # =========================================
 
     print("\nWHISPER FINISHED")
-    print(f"Saved text: {text_output_path}")
-    print(f"Saved words: {words_json_path}")
+    print(f"Saved words: {word_timings_json_path}")
     print(f"Saved segments: {segments_json_path}")
-
+    print(f"Saved text: {text_output_path}")
     print(f"Total words: {len(words_data)}")
-	
-    return words_json_path, segments_json_path, full_text_with_breaks	
+
+    return word_timings_json_path, segments_json_path, text_output_path
