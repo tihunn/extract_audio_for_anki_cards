@@ -58,6 +58,11 @@ def slice_audio(audio_path: Path, output_dir: Path, gpt_output_data: list[dict])
 
         start_ms = int(item["word_start"] * 1000)
         end_ms = int(item["word_end"] * 1000)
+        # больший захват для слов
+        LEFT_PADDING_MS = 150
+        RIGHT_PADDING_MS = 500
+        start_ms = max(0, start_ms - LEFT_PADDING_MS)
+        end_ms = min(len(audio), end_ms + RIGHT_PADDING_MS)
 
         word_audio = audio[start_ms:end_ms]
 
