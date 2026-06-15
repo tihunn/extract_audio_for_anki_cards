@@ -220,7 +220,7 @@ def view_prompt(prompt: str, str_number_batch: str = "", prev_content: str = "")
         else:
             return clipboard_content
     except KeyboardInterrupt:
-        warn_ctrl_c = "[red]Получил Ctrl+C для выкл консоли, выделите нормально потом копируйте[/red]"
+        warn_ctrl_c = " [red]Получил Ctrl+C для выкл консоли, выделите нормально потом копируйте[/red]"
         return view_prompt(prompt, str_number_batch + warn_ctrl_c, prev_content)
 
 
