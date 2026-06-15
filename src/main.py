@@ -6,6 +6,8 @@ from process_llm import semi_manual_processing
 from audio_segmentation import slice_audio
 from import_anki import import_to_anki
 from pathlib import Path
+from rich.console import Console
+import json
 
 
 def print_block(title):
@@ -16,7 +18,139 @@ def print_block(title):
     print("\n")
 
 
-def main():
+console = Console()
+
+
+def select_project_folder() -> Path | None:
+    """
+    Показывает список проектов из папки output
+    и возвращает Path выбранной папки.
+
+    Returns:
+        Path | None
+    """
+
+    output_dir = Path("output")
+
+    if not output_dir.exists():
+        console.print("[red]Папка output не найдена[/red]")
+        return None
+
+    projects = sorted(
+        [p for p in output_dir.iterdir() if p.is_dir()]
+    )
+
+    if not projects:
+        console.print("[red]В output нет проектов[/red]")
+        return None
+
+    console.print("\n[bold cyan]Доступные проекты:[/bold cyan]")
+
+    for i, project in enumerate(projects, start=1):
+        console.print(
+            f"[green]{i}.[/green] {project.name}"
+        )
+
+    while True:
+        choice = input("\nВыберите проект: ").strip()
+
+        try:
+            index = int(choice) - 1
+
+            if 0 <= index < len(projects):
+                selected = projects[index]
+
+                console.print(
+                    f"\n[green]Выбран проект:[/green] {selected.name}"
+                )
+
+                return selected.resolve()
+
+        except ValueError:
+            pass
+
+        console.print("[red]Некорректный выбор[/red]")
+
+
+def find_file(folder, filename):
+    """
+    Поиск файла в папке.
+
+    Args:
+        folder: путь к папке (Path или str)
+        filename: имя файла (str или Path)
+
+    Returns:
+        Path или сообщение об ошибке
+    """
+    put = Path(folder) / filename
+    return put if put.exists() else f"Файл {filename} не найден"
+
+
+def search_first_file_by_ext(folder: Path, extension: str = "*.lrc"):
+    """
+    Поиск .lrc файла в папке.
+
+    Args:
+        folder: путь к папке (Path)
+
+    Returns:
+        Path первого найденного .lrc файла или сообщение об ошибке
+    """
+    lrc_files = list(folder.glob(extension))
+
+    if not lrc_files:
+        return f"Файлы .lrc не найдены в {folder}"
+
+    # Если нашли несколько, возвращаем первый
+    return lrc_files[0]
+
+
+def get_gpt_output_data(output_dir):
+    path_anki = output_dir / "anki.json"
+    with open(path_anki, "r", encoding="utf-8") as file:
+        return json.load(file)
+
+
+def choice_pipeline():
+    print("\n1. Полный запуск")
+    print("2. Whisper")
+    print("3. Полуавтоматическая обработка текста")
+    print("4. Генерация картинок")
+    print("5. Нарезка аудио")
+    print("6. Импорт через ankiConnect")
+
+    mode = input("Выбор: ").strip()
+
+    if mode == "1":
+        run_full_pipeline()
+
+    elif mode == "2":
+        output_dir = select_project_folder()
+        audio_path = search_first_file_by_ext(output_dir, "*.mp3")
+        run_whisper(audio_path, output_dir)
+
+    elif mode == "3":
+        output_dir = select_project_folder()
+        words_json_path = find_file(output_dir, "words_by_whisper.json")
+        lrc_path = search_first_file_by_ext(output_dir, "*.lrc")
+        semi_manual_processing(output_dir, words_json_path, lrc_path)
+
+    elif mode == "4":
+        output_dir = select_project_folder()
+        run_generate_images(output_dir, get_gpt_output_data(output_dir))
+
+    elif mode == "5":
+        output_dir = select_project_folder()
+        audio_path = search_first_file_by_ext(output_dir, "*.mp3")
+        slice_audio(audio_path, output_dir, get_gpt_output_data(output_dir))
+
+    elif mode == "6":
+        output_dir = select_project_folder()
+        import_to_anki(get_gpt_output_data(output_dir), output_dir)
+
+
+def run_full_pipeline():
 
     start_time = time.time()
 
@@ -35,7 +169,7 @@ def main():
 
     print_block("RUNNING WHISPER")
 
-    words_json_path_str = run_whisper(audio_path, output_dir)
+    words_json_path_str, segments_json_path, full_text_with_breaks = run_whisper(audio_path, output_dir)
 
     # =====================================
     # Processing lyrics
@@ -79,4 +213,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    choice_pipeline()
