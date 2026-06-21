@@ -5,6 +5,7 @@ from search_audio_and_lyric import resource_selection
 from process_llm import semi_manual_processing
 from audio_segmentation import slice_audio
 from import_anki import import_to_anki
+from import_sentence import import_sentences_to_anki
 from pathlib import Path
 from rich.console import Console
 import json
@@ -119,6 +120,7 @@ def choice_pipeline():
     print("4. Генерация картинок")
     print("5. Нарезка аудио")
     print("6. Импорт через ankiConnect")
+    print("7. Импорт Предложений через ankiConnect")
 
     mode = input("Выбор: ").strip()
 
@@ -148,6 +150,10 @@ def choice_pipeline():
     elif mode == "6":
         output_dir = select_project_folder()
         import_to_anki(get_gpt_output_data(output_dir), output_dir)
+
+    elif mode == "7":
+        output_dir = select_project_folder()
+        import_sentences_to_anki(output_dir, get_gpt_output_data(output_dir))
 
 
 def run_full_pipeline():
