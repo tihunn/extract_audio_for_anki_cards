@@ -107,8 +107,8 @@ def search_first_file_by_ext(folder: Path, extension: str = "*.lrc"):
     return lrc_files[0]
 
 
-def get_gpt_output_data(output_dir):
-    path_anki = output_dir / "anki.json"
+def get_gpt_output_data(output_dir, name_data: str = "anki.json"):
+    path_anki = output_dir / name_data
     with open(path_anki, "r", encoding="utf-8") as file:
         return json.load(file)
 
@@ -122,6 +122,7 @@ def choice_pipeline():
     print("6. Импорт через ankiConnect")
     print("7. Импорт Предложений через ankiConnect")
     print("8. Полуавтоматическая обработка предложений")
+    print("9. нарезка аудио только предложений")
 
     mode = input("Выбор: ").strip()
 
@@ -160,6 +161,14 @@ def choice_pipeline():
         output_dir = select_project_folder()
         lrc_path = search_first_file_by_ext(output_dir, "*.lrc")
         semi_manual_processing(output_dir, lrc_path, is_sentence=True)
+
+    elif mode == "9":
+        output_dir = select_project_folder()
+        audio_path = search_first_file_by_ext(output_dir, "*.mp3")
+        slice_audio(audio_path,
+                    output_dir,
+                    get_gpt_output_data(output_dir, "anki_sentences.json"),
+                    False)
     else:
         print("Ввели что-то не то, перезапущу")
         choice_pipeline()
