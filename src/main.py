@@ -121,6 +121,7 @@ def choice_pipeline():
     print("5. Нарезка аудио")
     print("6. Импорт через ankiConnect")
     print("7. Импорт Предложений через ankiConnect")
+    print("8. Полуавтоматическая обработка предложений")
 
     mode = input("Выбор: ").strip()
 
@@ -136,7 +137,7 @@ def choice_pipeline():
         output_dir = select_project_folder()
         words_json_path = find_file(output_dir, "words_by_whisper.json")
         lrc_path = search_first_file_by_ext(output_dir, "*.lrc")
-        semi_manual_processing(output_dir, words_json_path, lrc_path)
+        semi_manual_processing(output_dir, lrc_path, words_json_path)
 
     elif mode == "4":
         output_dir = select_project_folder()
@@ -154,6 +155,14 @@ def choice_pipeline():
     elif mode == "7":
         output_dir = select_project_folder()
         import_sentences_to_anki(output_dir, get_gpt_output_data(output_dir))
+
+    elif mode == "8":
+        output_dir = select_project_folder()
+        lrc_path = search_first_file_by_ext(output_dir, "*.lrc")
+        semi_manual_processing(output_dir, lrc_path, is_sentence=True)
+    else:
+        print("Ввели что-то не то, перезапущу")
+        choice_pipeline()
 
 
 def run_full_pipeline():
@@ -183,7 +192,7 @@ def run_full_pipeline():
 
     print_block("Processing lyrics")
 
-    gpt_output_data = semi_manual_processing(output_dir, Path(words_json_path_str), lrc_path)
+    gpt_output_data = semi_manual_processing(output_dir, lrc_path, Path(words_json_path_str))
     
     # =====================================
     # IMAGE GENERATION

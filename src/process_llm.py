@@ -79,6 +79,7 @@ def replace_prompt_placeholder(
 def create_unified_prompt(
     words_json_path: Path,
     lrc_path: Path,
+    extract_promt_gpt,
     compact_json: bool = True,
 ) -> str:
     """
@@ -89,10 +90,6 @@ def create_unified_prompt(
         lrc_path: путь к LRC файлу
         compact_json: компактизировать ли JSON
     """
-    # 1. Загружаем конфиг с основным промптом
-    config = load_config()
-    extract_promt_gpt = config.get("extract_promt_gpt", "")
-    
     # 2. Загружаем и компактизируем JSON
     try:
         json_data = compact_json_content(words_json_path, remove_empty=compact_json)
@@ -224,24 +221,45 @@ def view_prompt(prompt: str, str_number_batch: str = "", prev_content: str = "")
         return view_prompt(prompt, str_number_batch + warn_ctrl_c, prev_content)
 
 
-def semi_manual_processing(output_dir: Path, words_json_path: Path, lrc_path: Path, cards_per_batch: int = 10):
+def semi_manual_processing(output_dir: Path,
+                           lrc_path: Path,
+                           words_json_path: Path = None,
+                           is_sentence: bool = False,
+                           cards_per_batch: int = 10):
+    config = load_config()
+
+    if is_sentence:
+        prompt_sentence = config.get("prompt_sentence", "")
+        data_anki = prompt_gen_sentence(lrc_path, prompt_sentence, cards_per_batch)
+        name_path_anki = "anki_sentences.json"
+    else:
+        extract_prompt_gpt = config.get("extract_prompt_gpt", "")
+        prompt_cards_gen = config.get("prompt_cards_gen", "")
+        data_anki = gen_prompt_word(lrc_path, words_json_path, extract_prompt_gpt, prompt_cards_gen, cards_per_batch)
+        name_path_anki = "anki.json"
+
+    # Создание файла в котором будет всё лежать
+    path_anki = os.path.join(output_dir, name_path_anki)
+    with open(path_anki, "w", encoding="utf-8") as file:
+        json.dump(data_anki, file)
+
+    return data_anki
+
+
+def gen_prompt_word(lrc_path: Path,
+                    words_json_path: Path,
+                    extract_prompt_gpt: str,
+                    prompt_cards_gen: str,
+                    cards_per_batch: int = 10):
     # =========================================
     # First Prompt for gpt
     # =========================================
-    first_gpt_prompt = create_unified_prompt(words_json_path, lrc_path)
+    first_gpt_prompt = create_unified_prompt(words_json_path, lrc_path, extract_prompt_gpt)
     data_anki = view_prompt(first_gpt_prompt, "initialization gpt")
-
-    # Создание файла в котором будет всё лежать
-    path_anki = os.path.join(output_dir, "anki.json")
-    with open(path_anki, "w", encoding="utf-8") as file:
-        json.dump(data_anki, file)
 
     # =========================================
     # Process cards
     # =========================================
-
-    config = load_config()
-    prompt_cards_gen = config.get("prompt_cards_gen", "")
     lyrics = clean_lrc_text(read_lrc_file(lrc_path))
     total_cards = len(data_anki)
     prev_cards = ""
@@ -277,7 +295,48 @@ def semi_manual_processing(output_dir: Path, words_json_path: Path, lrc_path: Pa
         for i, new_card in enumerate(cards):
             data_anki[start + i].update(new_card)
 
-    with open(path_anki, "w", encoding="utf-8") as file:
-        json.dump(data_anki, file)
+    return data_anki
+
+
+def lyrics_chunks(text: str, portion_size: int):
+    """
+    Генератор, возвращающий текст порциями по N строк.
+    """
+    if portion_size <= 0:
+        raise ValueError("portion_size должен быть больше 0")
+
+    lines = text.splitlines()
+
+    for i in range(0, len(lines), portion_size):
+        yield "\n".join(lines[i:i + portion_size])
+
+
+def get_total_chunks(text: str, portion_size: int) -> int:
+    lines_count = len(text.splitlines())
+    return (lines_count + portion_size - 1) // portion_size
+
+
+def prompt_gen_sentence(lrc_path: Path, prompt_sentence: str, portion_size: int = 10):
+    # =========================================
+    # Process sentences
+    # =========================================
+    lyrics = read_lrc_file(lrc_path)
+    total_chunks = get_total_chunks(lyrics, portion_size)
+    prev_cards = ""
+    counter = 0
+    data_anki = []
+
+    for chunk in lyrics_chunks(lyrics, portion_size):
+        str_number_batch = f'{counter}/{total_chunks}'
+
+        ready_prompt = replace_prompt_placeholder(
+            "{song.lrc}",
+            prompt_sentence,
+            chunk
+        )
+        cards = view_prompt(ready_prompt, str_number_batch, prev_cards)
+        prev_cards = cards
+        counter += 1
+        data_anki.extend(cards)
 
     return data_anki
