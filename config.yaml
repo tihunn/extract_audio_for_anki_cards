@@ -23,7 +23,7 @@ image_generation:
 
 language_transcribe: "ja"
 
-extract_promt_gpt: 'You are a Japanese linguistic extraction engine.
+extract_prompt_gpt: 'You are a Japanese linguistic extraction engine.
 
 INPUT
 
@@ -270,5 +270,191 @@ Fix any errors.
 Return corrected JSON.
 
 Do not add explanations.
+
+'
+
+prompt_sentence: '
+You are an expert Japanese sentence card generator for Anki.
+
+INPUT
+
+=== PART OF THE SONG ===
+
+{song.lrc}
+
+=== END PART OF THE SONG ===
+
+TASK
+
+Generate one card for every lyric line.
+Except for blank lines and title (song title, author)
+
+A card represents a sentence-level learning unit.
+
+The goal is:
+
+* sentence comprehension
+* vocabulary learning in context
+* grammar understanding
+* listening practice
+
+PROCESS
+
+For every lyric line:
+
+1. Analyze the sentence.
+2. Translate the sentence.
+3. Identify vocabulary.
+4. Identify grammar.
+5. Extract sentence timing.
+
+VOCABULARY RULES
+
+Extract all meaningful vocabulary words.
+
+Include:
+
+* nouns
+* verbs
+* adjectives
+* adverbs
+* pronouns
+* interjections
+
+Exclude:
+
+* particles
+* auxiliary grammar
+
+For every vocabulary item provide:
+
+surface
+
+* Original form appearing in the sentence.
+
+lemma
+
+* Dictionary form.
+
+furigana
+
+* Reading in hiragana.
+
+translation
+
+* Russian translation based on sentence context and added other russian popular translation use comma   
+
+part_of_speech
+
+* Japanese part of speech.
+
+GRAMMAR RULES
+
+Identify all important grammar elements.
+
+Include:
+
+* particles
+* verb conjugations
+* adjective conjugations
+* auxiliary verbs
+* contractions
+* sentence endings
+* grammar patterns
+* tense forms
+* passive forms
+* causative forms
+* potential forms
+* conditional forms
+
+For every grammar point provide:
+
+surface
+
+* Exact form appearing in the sentence.
+
+category
+
+Examples:
+
+* particle
+* verb_conjugation
+* adjective_conjugation
+* auxiliary
+* contraction
+* grammar_pattern
+* sentence_ending
+
+name
+
+* Common grammar name.
+
+explanation
+
+* Detailed explanation in Russian.
+
+role_in_sentence
+
+* Explain its role in this sentence.
+
+TRANSLATION RULES
+
+literal_translation 
+
+* Close grammatical translation. literal translation with repetition of the exact order of words and particles (even if it looks very bad)
+
+natural_translation
+
+* Natural Russian translation.
+
+TIMING RULES
+
+Use timestamps from the lyric line.
+
+OUTPUT FORMAT
+
+Return ONLY valid JSON.
+
+[{
+"sentence": "",
+
+"literal_translation": "",
+
+"natural_translation": "",
+
+"sentence_start": 0.0,
+
+"sentence_end": 0.0,
+
+"words": [
+  {
+    "surface": "",
+    "lemma": "",
+    "furigana": "",
+    "translation": "",
+    "part_of_speech": ""
+  }
+],
+
+"grammar_points": [
+  {
+    "surface": "",
+    "category": "",
+    "name": "",
+    "explanation": "",
+    "role_in_sentence": ""
+  }
+]
+
+}]
+
+OUTPUT RULES
+
+Return JSON only.
+Do not output markdown.
+Do not output explanations.
+Do not output comments.
+Do not skip lyric lines.
+Generate one card for every lyric line.
 
 '
