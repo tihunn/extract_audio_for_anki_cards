@@ -141,22 +141,20 @@ def _ac_add_notes(url: str, deck_name: str, model_name: str, notes_data: list[di
 CARD_CSS = """
 /* ── Base ─────────────────────────────────── */
 :root {
-  --accent: #4a90e2;
-  --accent2: #e67e22;
-  --accent3: #8e44ad;
-  --hl-word: rgba(74,144,226,.25);
-  --hl-gram: rgba(230,126,34,.25);
-  --hl-word-border: #4a90e2;
-  --hl-gram-border: #e67e22;
-  --card-bg: #1e1e2e;
-  --text: #cdd6f4;
-  --subtext: #a6adc8;
-  --surface0: #313244;
-  --surface1: #45475a;
-  --green:  #a6e3a1;
-  --yellow: #f9e2af;
-  --mauve:  #cba6f7;
-  --red:    #f38ba8;
+  --accent:          #e8a87c;
+  --accent2:         #e67e22;
+  --hl-word:         rgba(232,168,124,.22);
+  --hl-word-border:  #e8a87c;
+  --hl-gram:         rgba(230,126,34,.22);
+  --hl-gram-border:  #e67e22;
+  --card-bg:         #1e1e2e;
+  --text:            #e0dfe8;
+  --subtext:         #9e9bb0;
+  --surface0:        #2a2a3d;
+  --surface1:        #3c3a52;
+  --green:           #a8d8a8;
+  --yellow:          #f9e2af;
+  --mauve:           #cba6f7;
 }
 
 html, body { margin: 0; padding: 0; }
@@ -175,51 +173,118 @@ html, body { margin: 0; padding: 0; }
 #card-root {
   max-width: 640px;
   margin: 0 auto;
-  padding: 16px 12px 32px;
+  padding: 20px 16px 36px;
   box-sizing: border-box;
+  text-align: center;
 }
 
-/* ── Sentence ─────────────────────────────── */
+/* ── Sentence wrapper (для фуриганы над словами) ── */
+#sentence-wrap {
+  margin-bottom: 12px;
+}
+
+/* Режим inline-ruby: когда фуригана показывается над словами */
 #sentence-block {
   font-size: 1.45em;
   line-height: 1.7;
-  margin-bottom: 10px;
   word-break: break-all;
+  display: inline;
+}
+
+/* Режим ruby для фуриганы над предложением */
+#sentence-block.furigana-mode {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 0;
+  line-height: 1;
+}
+
+.ruby-unit {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  margin: 0 1px;
+}
+
+.ruby-unit .ruby-top {
+  font-size: .52em;
+  color: var(--yellow);
+  line-height: 1.3;
+  min-height: 1em;
+  white-space: nowrap;
+}
+
+.ruby-unit .ruby-base {
+  font-size: 1em;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+/* Подсветка в режиме plain */
+#sentence-block .hl-word,
+#sentence-block .hl-gram {
+  border-radius: 3px;
+  cursor: pointer;
+  padding: 1px 2px;
+  transition: background .15s;
 }
 
 #sentence-block .hl-word {
   background: var(--hl-word);
   border-bottom: 2px solid var(--hl-word-border);
-  border-radius: 3px;
-  cursor: pointer;
-  padding: 1px 2px;
-  transition: background .15s;
 }
-#sentence-block .hl-word:hover  { background: rgba(74,144,226,.45); }
-#sentence-block .hl-word.active { background: rgba(74,144,226,.55); }
+#sentence-block .hl-word:hover  { background: rgba(232,168,124,.42); }
+#sentence-block .hl-word.active { background: rgba(232,168,124,.55); }
 
 #sentence-block .hl-gram {
   background: var(--hl-gram);
   border-bottom: 2px solid var(--hl-gram-border);
+}
+#sentence-block .hl-gram:hover  { background: rgba(230,126,34,.42); }
+#sentence-block .hl-gram.active { background: rgba(230,126,34,.55); }
+
+/* Подсветка внутри ruby-unit */
+.ruby-unit.hl-word {
+  background: var(--hl-word);
+  border-bottom: 2px solid var(--hl-word-border);
   border-radius: 3px;
   cursor: pointer;
-  padding: 1px 2px;
+  padding: 0 2px;
   transition: background .15s;
 }
-#sentence-block .hl-gram:hover  { background: rgba(230,126,34,.45); }
-#sentence-block .hl-gram.active { background: rgba(230,126,34,.55); }
+.ruby-unit.hl-word:hover  { background: rgba(232,168,124,.42); }
+.ruby-unit.hl-word.active { background: rgba(232,168,124,.55); }
+
+.ruby-unit.hl-gram {
+  background: var(--hl-gram);
+  border-bottom: 2px solid var(--hl-gram-border);
+  border-radius: 3px;
+  cursor: pointer;
+  padding: 0 2px;
+  transition: background .15s;
+}
+.ruby-unit.hl-gram:hover  { background: rgba(230,126,34,.42); }
+.ruby-unit.hl-gram.active { background: rgba(230,126,34,.55); }
+
+/* ── Audio ────────────────────────────────── */
+.audio-wrap {
+  margin: 6px 0 10px;
+}
 
 /* ── Translations ─────────────────────────── */
 #literal-block {
   display: none;
-  font-size: .9em;
+  font-size: .88em;
   color: var(--subtext);
   margin: 4px 0 8px;
   font-style: italic;
 }
 #natural-block {
   font-size: 1.05em;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 /* ── Buttons ──────────────────────────────── */
@@ -227,11 +292,12 @@ html, body { margin: 0; padding: 0; }
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  justify-content: center;
   margin-bottom: 14px;
 }
 
 .btn {
-  padding: 7px 16px;
+  padding: 7px 18px;
   border: 2px solid var(--surface1);
   border-radius: 20px;
   background: var(--surface0);
@@ -243,74 +309,116 @@ html, body { margin: 0; padding: 0; }
 }
 .btn:hover { filter: brightness(1.15); }
 
-/* Состояния кнопок */
-.btn.active-transl { border-color: var(--accent); color: var(--accent); }
+.btn.active-transl { border-color: var(--accent);  color: var(--accent); }
 .btn.active-gram   { border-color: var(--accent2); color: var(--accent2); }
-.btn.active-more-1 { border-color: var(--green);  color: var(--green); }
-.btn.active-more-2 { border-color: var(--mauve);  color: var(--mauve); }
+.btn.active-more-1 { border-color: var(--green);   color: var(--green); }
+.btn.active-more-2 { border-color: var(--mauve);   color: var(--mauve); }
 
 /* ── Detail panel ─────────────────────────── */
 #detail-panel {
   display: none;
   margin-top: 14px;
-  padding: 12px 14px;
+  padding: 14px 16px;
   background: var(--surface0);
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: .95em;
+  text-align: left;
 }
 
+/* Фуригана в панели (слова) */
 .detail-furigana {
-  font-size: .78em;
+  font-size: .76em;
   color: var(--yellow);
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
 
+/* name грамматики (moreLevel==2) */
 .detail-name {
-  font-size: .82em;
+  font-size: .8em;
   color: var(--mauve);
-  margin-bottom: 4px;
+  margin-bottom: 5px;
 }
 
+/* Строка: surface [+ category справа для грамматики] */
 .detail-surface-row {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
+  align-items: flex-end;
+  gap: 10px;
   font-size: 1.2em;
   font-weight: 600;
-  margin-bottom: 4px;
+  margin-bottom: 5px;
 }
 
+/* Бейдж category — ПОСЛЕ surface */
 .detail-category {
-  font-size: .72em;
+  font-size: .65em;
   color: var(--subtext);
   border: 1px solid var(--surface1);
   border-radius: 4px;
-  padding: 1px 5px;
+  padding: 1px 6px;
+  font-weight: 400;
+  align-self: center;
+}
+
+/* Строка: translation  [часть речи справа] */
+.detail-trans-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 3px;
+}
+
+.detail-translation {
+  font-size: 1em;
+  flex: 1;
 }
 
 .detail-pos {
-  font-size: .8em;
+  font-size: .78em;
   color: var(--subtext);
-  margin-top: 2px;
+  white-space: nowrap;
 }
 
-.detail-lemma {
-  font-size: .8em;
-  color: var(--subtext);
-  font-style: italic;
-  margin-right: 6px;
+/* Лемма — стоит рядом с surface в одной строке.
+   Сверху маленький лейбл «lemma», снизу само значение серым. */
+.detail-lemma-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-left: 14px;
+  line-height: 1;
 }
 
+.detail-lemma-label {
+  font-size: .55em;
+  color: var(--subtext);
+  opacity: .65;
+  line-height: 1.4;
+  letter-spacing: .03em;
+}
+
+.detail-lemma-val {
+  font-size: .82em;
+  font-weight: 600;
+  color: var(--subtext);
+  line-height: 1;
+}
+
+/* explanation — скрыто пока moreLevel==0 */
 .detail-explanation {
-  font-size: .9em;
+  font-size: .88em;
   color: var(--subtext);
-  margin: 5px 0;
+  margin: 6px 0 4px;
   border-left: 2px solid var(--surface1);
   padding-left: 8px;
+  display: none;
+}
+.detail-explanation.visible {
+  display: block;
 }
 
 .detail-role {
-  font-size: .92em;
+  font-size: .93em;
   margin-top: 5px;
 }
 
@@ -318,7 +426,7 @@ html, body { margin: 0; padding: 0; }
 hr.sep {
   border: none;
   border-top: 1px solid var(--surface1);
-  margin: 10px 0;
+  margin: 12px 0;
 }
 """
 
@@ -356,67 +464,116 @@ function escapeRegex(s){
   return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 }
 
-// Исходный текст предложения (без разметки)
-const rawSentence = sentBlock.getAttribute('data-raw');
-
-function buildSentenceHTML(){
-  let html = rawSentence;
-
-  if(modeGram){
-    // подсветка грамматических конструкций
-    const markers = GRAMS.map(g => ({
-      text: cleanSurface(g.surface),
-      idx: GRAMS.indexOf(g),
-      cls: 'hl-gram'
-    })).filter(m => m.text && rawSentence.includes(m.text));
-
-    html = applyHighlights(rawSentence, markers, 'gram');
-  } else if(modeTransl){
-    // подсветка слов
-    const markers = WORDS.map((w,i) => ({
-      text: cleanSurface(w.surface),
-      idx: i,
-      cls: 'hl-word'
-    })).filter(m => m.text && rawSentence.includes(m.text));
-
-    html = applyHighlights(rawSentence, markers, 'word');
-  }
-
-  sentBlock.innerHTML = html;
-  attachClickHandlers();
+function escapeHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-function applyHighlights(text, markers, type){
-  // Находим все совпадения с позициями
+const rawSentence = sentBlock.getAttribute('data-raw');
+
+// ── Сборка spans (позиции вхождений) ────────
+
+function collectSpans(text, items, type){
   let spans = [];
-  markers.forEach(m => {
-    const rx = new RegExp(escapeRegex(m.text),'g');
-    let match;
-    while((match = rx.exec(text)) !== null){
-      spans.push({start: match.index, end: match.index + m.text.length, idx: m.idx, cls: m.cls, type});
+  items.forEach((item, idx) => {
+    const surface = cleanSurface(type === 'word' ? item.surface : item.surface);
+    if(!surface) return;
+    const rx = new RegExp(escapeRegex(surface), 'g');
+    let m;
+    while((m = rx.exec(text)) !== null){
+      spans.push({start: m.index, end: m.index + surface.length, idx, type,
+                  cls: type === 'word' ? 'hl-word' : 'hl-gram'});
     }
   });
-
-  // Сортируем по началу, убираем перекрытия
+  // сортировка, убираем перекрытия
   spans.sort((a,b) => a.start - b.start);
   let filtered = [], last = -1;
-  spans.forEach(s => {
-    if(s.start >= last){ filtered.push(s); last = s.end; }
-  });
+  spans.forEach(s => { if(s.start >= last){ filtered.push(s); last = s.end; } });
+  return filtered;
+}
 
-  // Строим HTML
-  let result = '', pos = 0;
-  filtered.forEach(s => {
+// ── Режим plain (без фуриганы) ──────────────
+
+function buildPlainHTML(spans){
+  let result = '', pos = 0, text = rawSentence;
+  spans.forEach(s => {
     if(s.start > pos) result += escapeHtml(text.slice(pos, s.start));
-    result += `<span class="${s.cls}" data-idx="${s.idx}" data-type="${s.type}">${escapeHtml(text.slice(s.start, s.end))}</span>`;
+    result += `<span class="${s.cls}" data-idx="${s.idx}" data-type="${s.type}">`
+            + escapeHtml(text.slice(s.start, s.end))
+            + `</span>`;
     pos = s.end;
   });
   if(pos < text.length) result += escapeHtml(text.slice(pos));
   return result;
 }
 
-function escapeHtml(s){
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+// ── Режим ruby (фуригана над словами) ───────
+// Показывается когда modeTransl && moreLevel === 2
+
+function buildRubyHTML(spans){
+  // Строим карту: позиция → {furigana, span}
+  // Если span === null — просто символ без разметки
+  let result = '';
+  let pos = 0, text = rawSentence;
+
+  // Для span-ов ищем соответствующее слово из WORDS (только для hl-word)
+  const furiganaMap = {};
+  WORDS.forEach((w, i) => {
+    if(w.furigana) furiganaMap[i] = w.furigana;
+  });
+
+  spans.forEach(s => {
+    // Символы между span-ами — по одному ruby-unit без фуриганы
+    if(s.start > pos){
+      const chunk = text.slice(pos, s.start);
+      // Разбиваем на отдельные символы, каждый — ruby-unit с пустым верхом
+      for(const ch of chunk){
+        result += `<span class="ruby-unit"><span class="ruby-top"></span>`
+                + `<span class="ruby-base">${escapeHtml(ch)}</span></span>`;
+      }
+    }
+    // Сам span
+    const surface = text.slice(s.start, s.end);
+    const furi    = (s.type === 'word' && furiganaMap[s.idx]) ? furiganaMap[s.idx] : '';
+    const cls     = s.cls;
+    result += `<span class="ruby-unit ${cls}" data-idx="${s.idx}" data-type="${s.type}">`
+            + `<span class="ruby-top">${escapeHtml(furi)}</span>`
+            + `<span class="ruby-base">${escapeHtml(surface)}</span>`
+            + `</span>`;
+    pos = s.end;
+  });
+
+  // Оставшиеся символы
+  if(pos < text.length){
+    for(const ch of text.slice(pos)){
+      result += `<span class="ruby-unit"><span class="ruby-top"></span>`
+              + `<span class="ruby-base">${escapeHtml(ch)}</span></span>`;
+    }
+  }
+  return result;
+}
+
+// ── Основная перестройка предложения ────────
+
+function buildSentenceHTML(){
+  let spans = [];
+
+  if(modeGram){
+    spans = collectSpans(rawSentence, GRAMS, 'gram');
+  } else if(modeTransl){
+    spans = collectSpans(rawSentence, WORDS, 'word');
+  }
+
+  const useRuby = modeTransl && moreLevel === 2;
+
+  if(useRuby){
+    sentBlock.classList.add('furigana-mode');
+    sentBlock.innerHTML = buildRubyHTML(spans);
+  } else {
+    sentBlock.classList.remove('furigana-mode');
+    sentBlock.innerHTML = buildPlainHTML(spans);
+  }
+
+  attachClickHandlers();
 }
 
 function attachClickHandlers(){
@@ -427,63 +584,79 @@ function attachClickHandlers(){
 
 function onSpanClick(e){
   const el = e.currentTarget;
-  const type = el.dataset.type;
-  const idx  = parseInt(el.dataset.idx);
-
-  // снимаем active со всех, ставим на текущий
   sentBlock.querySelectorAll('.hl-word,.hl-gram').forEach(x => x.classList.remove('active'));
   el.classList.add('active');
-
-  if(type === 'word')  showWordDetail(idx);
-  if(type === 'gram')  showGramDetail(idx);
+  const type = el.dataset.type;
+  const idx  = parseInt(el.dataset.idx);
+  if(type === 'word') showWordDetail(idx);
+  if(type === 'gram') showGramDetail(idx);
 }
+
+// ── Word detail ──────────────────────────────
+// Раскладка:
+//   [фуригана]                       ← только moreLevel >= 1
+//   surface  [lemma-wrap]            ← lemma рядом с surface, moreLevel === 2
+//   translation          part_of_speech
 
 function showWordDetail(idx){
   const w = WORDS[idx];
   let html = '';
 
-  // Фуригана (только если moreLevel >= 1)
+  // Фуригана
   if(moreLevel >= 1 && w.furigana){
     html += `<div class="detail-furigana">${escapeHtml(w.furigana)}</div>`;
   }
 
-  // Surface + (lemma если moreLevel==2)
+  // Surface + lemma рядом (moreLevel==2)
   html += `<div class="detail-surface-row">`;
-  if(moreLevel === 2 && w.lemma){
-    html += `<span class="detail-lemma">${escapeHtml(w.lemma)}</span>`;
-  }
   html += `<span>${escapeHtml(w.surface)}</span>`;
+  if(moreLevel === 2 && w.lemma){
+    html += `<span class="detail-lemma-wrap">`
+          + `<span class="detail-lemma-label">lemma</span>`
+          + `<span class="detail-lemma-val">${escapeHtml(w.lemma)}</span>`
+          + `</span>`;
+  }
   html += `</div>`;
 
-  // part_of_speech + translation
-  html += `<div class="detail-pos">`;
-  html += `<span class="detail-pos">${escapeHtml(w.part_of_speech || '')}&nbsp;</span>`;
-  html += `<span>${escapeHtml(w.translation || '')}</span>`;
+  // translation (слева) + part_of_speech (справа)
+  html += `<div class="detail-trans-row">`;
+  html += `<span class="detail-translation">${escapeHtml(w.translation || '')}</span>`;
+  if(w.part_of_speech){
+    html += `<span class="detail-pos">${escapeHtml(w.part_of_speech)}</span>`;
+  }
   html += `</div>`;
 
   showDetail(html);
 }
 
+// ── Grammar detail ───────────────────────────
+// Раскладка:
+//   [name]                ← только moreLevel === 2
+//   surface  [category]   ← category после surface, только moreLevel >= 1
+//   [explanation]         ← только moreLevel >= 1
+//   role_in_sentence
+
 function showGramDetail(idx){
   const g = GRAMS[idx];
   let html = '';
 
-  // name (если moreLevel==2)
+  // name
   if(moreLevel === 2 && g.name){
     html += `<div class="detail-name">${escapeHtml(g.name)}</div>`;
   }
 
-  // surface row + category
+  // surface + category справа
   html += `<div class="detail-surface-row">`;
+  html += `<span>${escapeHtml(cleanSurface(g.surface))}</span>`;
   if(moreLevel >= 1 && g.category){
     html += `<span class="detail-category">${escapeHtml(g.category)}</span>`;
   }
-  html += `<span>${escapeHtml(cleanSurface(g.surface))}</span>`;
   html += `</div>`;
 
-  // explanation
+  // explanation — видна только при moreLevel >= 1
+  const explVis = moreLevel >= 1 ? ' visible' : '';
   if(g.explanation){
-    html += `<div class="detail-explanation">${escapeHtml(g.explanation)}</div>`;
+    html += `<div class="detail-explanation${explVis}">${escapeHtml(g.explanation)}</div>`;
   }
 
   // role_in_sentence
@@ -509,8 +682,7 @@ function hideDetail(){
 
 btnTransl.addEventListener('click', () => {
   modeTransl = !modeTransl;
-  if(modeTransl){ modeGram = false; }
-
+  if(modeTransl) modeGram = false;
   btnTransl.className = 'btn' + (modeTransl ? ' active-transl' : '');
   btnGram.className   = 'btn' + (modeGram   ? ' active-gram'   : '');
   litBlock.style.display = modeTransl ? 'block' : 'none';
@@ -520,8 +692,7 @@ btnTransl.addEventListener('click', () => {
 
 btnGram.addEventListener('click', () => {
   modeGram = !modeGram;
-  if(modeGram){ modeTransl = false; }
-
+  if(modeGram) modeTransl = false;
   btnTransl.className = 'btn' + (modeTransl ? ' active-transl' : '');
   btnGram.className   = 'btn' + (modeGram   ? ' active-gram'   : '');
   litBlock.style.display = 'none';
@@ -530,20 +701,27 @@ btnGram.addEventListener('click', () => {
 });
 
 btnMore.addEventListener('click', () => {
+  // Сохраняем активный элемент ДО перестройки DOM
+  const activeSpan = sentBlock.querySelector('.hl-word.active, .hl-gram.active');
+  const activeType = activeSpan ? activeSpan.dataset.type : null;
+  const activeIdx  = activeSpan ? parseInt(activeSpan.dataset.idx) : null;
+
   moreLevel = (moreLevel + 1) % 3;
+  btnMore.className = ['btn','btn active-more-1','btn active-more-2'][moreLevel];
 
-  const cls = ['btn','btn active-more-1','btn active-more-2'][moreLevel];
-  btnMore.className = cls;
+  // Перестраиваем предложение (фуригана появляется/исчезает)
+  buildSentenceHTML();
 
-  // Если панель открыта — перерисовать
-  if(detPanel.style.display === 'block'){
-    const activeSpan = sentBlock.querySelector('.hl-word.active, .hl-gram.active');
-    if(activeSpan){
-      const type = activeSpan.dataset.type;
-      const idx  = parseInt(activeSpan.dataset.idx);
-      if(type === 'word') showWordDetail(idx);
-      if(type === 'gram') showGramDetail(idx);
-    }
+  // Восстанавливаем active-класс на соответствующем элементе в новом DOM
+  if(activeIdx !== null){
+    const restored = sentBlock.querySelector(
+      `[data-type="${activeType}"][data-idx="${activeIdx}"]`
+    );
+    if(restored) restored.classList.add('active');
+
+    // Обновляем панель деталей
+    if(activeType === 'word') showWordDetail(activeIdx);
+    if(activeType === 'gram') showGramDetail(activeIdx);
   }
 });
 
@@ -561,8 +739,10 @@ buildSentenceHTML();
 FRONT_TMPL = """
 <div class="card">
   <div id="card-root">
-    <div id="sentence-block" data-raw="{{sentence}}">{{sentence}}</div>
-    {{audio}}
+    <div id="sentence-wrap">
+      <div id="sentence-block" data-raw="{{sentence}}">{{sentence}}</div>
+    </div>
+    <div class="audio-wrap">{{audio}}</div>
   </div>
 </div>
 """.strip()
@@ -581,9 +761,14 @@ BACK_TMPL = """
     <script id="data-grams"  type="application/json">{{grams_json}}</script>
 
     <!-- Предложение -->
-    <div id="sentence-block" data-raw="{{sentence}}">{{sentence}}</div>
+    <div id="sentence-wrap">
+      <div id="sentence-block" data-raw="{{sentence}}">{{sentence}}</div>
+    </div>
 
-    <!-- Буквальный перевод (скрыт до нажатия) -->
+    <!-- Аудио -->
+    <div class="audio-wrap">{{audio}}</div>
+
+    <!-- Буквальный перевод (скрыт до нажатия кнопки «Перевод») -->
     <div id="literal-block">{{literal_translation}}</div>
 
     <!-- Натуральный перевод -->
