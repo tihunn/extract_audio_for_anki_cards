@@ -6,6 +6,7 @@ from process_llm import semi_manual_processing
 from audio_segmentation import slice_audio
 from import_anki import import_to_anki
 from import_sentence import import_sentences_to_anki
+from import_only_sentence import create_anki_deck
 from pathlib import Path
 from rich.console import Console
 import json
@@ -123,6 +124,7 @@ def choice_pipeline():
     print("7. Импорт Предложений через ankiConnect")
     print("8. Полуавтоматическая обработка предложений")
     print("9. нарезка аудио только предложений")
+    print("10. Импорт Предложений через ankiConnect 2")
 
     mode = input("Выбор: ").strip()
 
@@ -169,6 +171,11 @@ def choice_pipeline():
                     output_dir,
                     get_gpt_output_data(output_dir, "anki_sentences.json"),
                     False)
+
+    elif mode == "10":
+        output_dir = select_project_folder()
+        create_anki_deck(output_dir, get_gpt_output_data(output_dir, "anki_sentences.json"), ankiconnect=True)
+
     else:
         print("Ввели что-то не то, перезапущу")
         choice_pipeline()
