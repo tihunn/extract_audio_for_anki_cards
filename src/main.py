@@ -114,14 +114,38 @@ def get_gpt_output_data(output_dir, name_data: str = "anki.json"):
         return json.load(file)
 
 
+from pathlib import Path
+
+
+def find_audio_file(folder: Path) -> Path:
+    """
+    Ищет первый аудиофайл в папке.
+
+    Args:
+        folder: путь к папке
+
+    Returns:
+        Path к найденному аудиофайлу или None
+    """
+    audio_extensions = {".mp3", ".m4a", ".wav", ".flac", ".ogg", ".aac", ".wma", ".opus", ".aiff", ".alac"}
+
+    for file in folder.iterdir():
+        if file.is_file() and file.suffix.lower() in audio_extensions:
+            return file
+
+    raise FileNotFoundError(f"Аудиофайл не найден в {folder}")
+
+
 def choice_pipeline():
-    print("\n1. Полный запуск")
+    print("\n1. Полный запуск для слов")
+    print("11. Полный запуск только для предложения")
+    print("\n Запустить отдельные части конвеера")
     print("2. Whisper")
     print("3. Полуавтоматическая обработка текста")
     print("4. Генерация картинок")
     print("5. Нарезка аудио")
     print("6. Импорт через ankiConnect")
-    print("7. Импорт Предложений через ankiConnect")
+    print("7. Импорт Предложений через ankiConnect из файла слов")
     print("8. Полуавтоматическая обработка предложений")
     print("9. нарезка аудио только предложений")
     print("10. Импорт Предложений через ankiConnect 2")
@@ -131,9 +155,12 @@ def choice_pipeline():
     if mode == "1":
         run_full_pipeline()
 
+    elif mode == "11":
+        run_full_pipeline(False)
+
     elif mode == "2":
         output_dir = select_project_folder()
-        audio_path = search_first_file_by_ext(output_dir, "*.mp3")
+        audio_path = find_audio_file(output_dir)
         run_whisper(audio_path, output_dir)
 
     elif mode == "3":
@@ -148,7 +175,7 @@ def choice_pipeline():
 
     elif mode == "5":
         output_dir = select_project_folder()
-        audio_path = search_first_file_by_ext(output_dir, "*.mp3")
+        audio_path = find_audio_file(output_dir)
         slice_audio(audio_path, output_dir, get_gpt_output_data(output_dir))
 
     elif mode == "6":
@@ -166,7 +193,7 @@ def choice_pipeline():
 
     elif mode == "9":
         output_dir = select_project_folder()
-        audio_path = search_first_file_by_ext(output_dir, "*.mp3")
+        audio_path = find_audio_file(output_dir)
         slice_audio(audio_path,
                     output_dir,
                     get_gpt_output_data(output_dir, "anki_sentences.json"),
@@ -181,7 +208,7 @@ def choice_pipeline():
         choice_pipeline()
 
 
-def run_full_pipeline():
+def run_full_pipeline(is_words: bool = True, is_ankiconnect: bool = True):
 
     start_time = time.time()
 
@@ -197,26 +224,28 @@ def run_full_pipeline():
     # =====================================
     # WHISPER
     # =====================================
+    if is_words:
+        print_block("RUNNING WHISPER")
 
-    print_block("RUNNING WHISPER")
-
-    words_json_path_str, segments_json_path, full_text_with_breaks = run_whisper(audio_path, output_dir)
-
+        words_json_path_str, segments_json_path, full_text_with_breaks = run_whisper(audio_path, output_dir)
+        words_json_path = Path(words_json_path_str)
+    else:
+        words_json_path = None
     # =====================================
     # Processing lyrics
     # =====================================
 
     print_block("Processing lyrics")
 
-    gpt_output_data = semi_manual_processing(output_dir, lrc_path, Path(words_json_path_str))
+    gpt_output_data = semi_manual_processing(output_dir, lrc_path, words_json_path, is_sentence=not is_words)
     
     # =====================================
     # IMAGE GENERATION
     # =====================================
+    if is_words:
+        print_block("RUNNING IMAGE GENERATION")
 
-    print_block("RUNNING IMAGE GENERATION")
-
-    run_generate_images(output_dir, gpt_output_data)
+        run_generate_images(output_dir, gpt_output_data)
 
     # =====================================
     # Audio segmentation 
@@ -224,16 +253,17 @@ def run_full_pipeline():
     
     print_block("Audio segmentation")
 
-    slice_audio(audio_path, output_dir, gpt_output_data)
+    slice_audio(audio_path, output_dir, gpt_output_data, slice_words=is_words)
 
     # =====================================
     # Anki connect
     # =====================================
 
     print_block("anki connect")
-
-    import_to_anki(gpt_output_data, output_dir)
-
+    if is_words:
+        import_to_anki(gpt_output_data, output_dir)
+    else:
+        create_anki_deck(output_dir, gpt_output_data, ankiconnect=is_ankiconnect)
     # =====================================
 
     total_time = time.time() - start_time

@@ -223,7 +223,7 @@ def view_prompt(prompt: str, str_number_batch: str = "", prev_content: str = "")
 
 def semi_manual_processing(output_dir: Path,
                            lrc_path: Path,
-                           words_json_path: Path = None,
+                           words_json_path = None,
                            is_sentence: bool = False,
                            cards_per_batch: int = 10):
     config = load_config()

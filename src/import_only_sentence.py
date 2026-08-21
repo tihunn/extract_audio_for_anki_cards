@@ -127,7 +127,7 @@ def _ac_add_notes(url: str, deck_name: str, model_name: str, notes_data: list[di
             "modelName": model_name,
             "fields": n["fields"],
             "tags": n.get("tags", []),
-            "options": {"allowDuplicate": False, "duplicateScope": "deck"},
+            "options": {"allowDuplicate": True, "duplicateScope": "deck"},
         }
         for n in notes_data
     ]
@@ -880,8 +880,23 @@ def create_anki_deck(
 
     audio_dir = output_dir / "sentences"
 
+    # ── Anti-duplication ────────────────────────
+    seen_sentences = set()
+
+    def normalize_sentence(s: str) -> str:
+        return re.sub(r"\s+", " ", s).strip()
+
     for item in gpt_output_data:
-        sentence            = item.get("sentence", "")
+        sentence = item.get("sentence", "")
+        norm_sentence = normalize_sentence(sentence)
+
+        # skip duplicates
+        if norm_sentence in seen_sentences:
+            print(f"[SKIP DUPLICATE] {sentence}")
+            continue
+
+        seen_sentences.add(norm_sentence)
+
         literal_translation = item.get("literal_translation", "")
         natural_translation = item.get("natural_translation", "")
         words               = item.get("words", [])

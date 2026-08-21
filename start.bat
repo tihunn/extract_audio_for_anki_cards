@@ -1,5 +1,5 @@
-@echo off
-cd /d "%~dp0"
+﻿@echo off
+chcp 65001
 
 echo Активация виртуального окружения...
 call venv\Scripts\activate.bat
