@@ -6,6 +6,10 @@ import os
 from rich.console import Console
 import re
 import pyperclip
+from dotenv import load_dotenv
+from google import genai
+
+load_dotenv()
 
 
 def compact_json_content(json_path: Path, remove_empty: bool = True) -> Dict[str, Any]:
@@ -221,6 +225,67 @@ def view_prompt(prompt: str, str_number_batch: str = "", prev_content: str = "")
         return view_prompt(prompt, str_number_batch + warn_ctrl_c, prev_content)
 
 
+def call_gemini_api(prompt: str, model: str = "gemini-3.6-flash") -> str:
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        raise RuntimeError(
+            "GEMINI_API_KEY не найден. Впишите свой ключ в файл .env в корне проекта."
+        )
+
+    client = genai.Client(api_key=api_key)
+    response = client.models.generate_content(model=model, contents=prompt)
+    return response.text
+
+
+def strip_json_fence(text: str) -> str:
+    text = text.strip()
+    if text.startswith("```"):
+        text = re.sub(r"^```[a-zA-Z]*\n?", "", text)
+        text = re.sub(r"\n?```$", "", text)
+    return text.strip()
+
+
+_llm_mode = None
+
+
+def choose_llm_mode() -> str:
+    global _llm_mode
+    if _llm_mode is not None:
+        return _llm_mode
+
+    console = Console()
+    console.print("\n[cyan]Способ обработки промптов:[/cyan]")
+    console.print("1. Вручную через браузер (копировать в ChatGPT/Claude, вставлять ответ)")
+    console.print("2. Автоматически через Gemini API (нужен ключ в .env)")
+    choice = console.input("Выбор [1/2]: ").strip()
+    _llm_mode = "api" if choice == "2" else "manual"
+    return _llm_mode
+
+
+def ask_llm(prompt: str, str_number_batch: str = "", prev_content: str = ""):
+    if choose_llm_mode() == "manual":
+        return view_prompt(prompt, str_number_batch, prev_content)
+
+    console = Console()
+    if str_number_batch:
+        console.print(f"\n[cyan]Порция {str_number_batch}[/cyan] — отправка в Gemini API...")
+
+    model = load_config().get("gemini_model", "gemini-3.6-flash")
+
+    try:
+        raw_response = call_gemini_api(prompt, model=model)
+        data = json.loads(strip_json_fence(raw_response))
+    except json.JSONDecodeError:
+        console.print("[red]Ответ API не является валидным JSON, повторяю запрос...[/red]")
+        return ask_llm(prompt, str_number_batch, prev_content)
+    except Exception as e:
+        console.print(f"[red]Ошибка Gemini API: {e}[/red]")
+        console.input("Нажмите enter чтобы повторить запрос: ")
+        return ask_llm(prompt, str_number_batch, prev_content)
+
+    return data
+
+
 def semi_manual_processing(output_dir: Path,
                            lrc_path: Path,
                            words_json_path = None,
@@ -255,7 +320,7 @@ def gen_prompt_word(lrc_path: Path,
     # First Prompt for gpt
     # =========================================
     first_gpt_prompt = create_unified_prompt(words_json_path, lrc_path, extract_prompt_gpt)
-    data_anki = view_prompt(first_gpt_prompt, "initialization gpt")
+    data_anki = ask_llm(first_gpt_prompt, "initialization gpt")
 
     # =========================================
     # Process cards
@@ -289,7 +354,7 @@ def gen_prompt_word(lrc_path: Path,
             ready_prompt,
             str(cards_json)
         )
-        cards = view_prompt(ready_prompt, str_number_batch, prev_cards)
+        cards = ask_llm(ready_prompt, str_number_batch, prev_cards)
         prev_cards = cards
         # update data_anki
         for i, new_card in enumerate(cards):
@@ -334,7 +399,7 @@ def prompt_gen_sentence(lrc_path: Path, prompt_sentence: str, portion_size: int 
             prompt_sentence,
             chunk
         )
-        cards = view_prompt(ready_prompt, str_number_batch, prev_cards)
+        cards = ask_llm(ready_prompt, str_number_batch, prev_cards)
         prev_cards = cards
         counter += 1
         data_anki.extend(cards)
